@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.us-east-1.amazonaws.com
+  build:
+    commands:
+      - echo Building JMeter image...
+      - docker build -t jmeter docker/jmeter
+      - docker tag jmeter:latest <aws-account-id>.dkr.ecr.us-east-1.amazonaws.com/jmeter:latest
+      - echo Building Locust image...
+      - docker build -t locust docker/locust
+      - docker tag locust:latest <aws-account-id>.dkr.ecr.us-east-1.amazonaws.com/locust:latest
+  post_build:
+    commands:
+      - echo Pushing JMeter image...
+      - docker push <aws-account-id>.dkr.ecr.us-east-1.amazonaws.com/jmeter:latest
+      - echo Pushing Locust image...
+      - docker push <aws-account-id>.dkr.ecr.us-east-1.amazonaws.com/locust:latest
+
+artifacts:
+  files:
+    - '**/*'
